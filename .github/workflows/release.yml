@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
       - name: Read the version and skip if already released

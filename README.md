@@ -4,7 +4,7 @@
 
 <p align="center">Speaker notes that float over your slides on Zoom and Google Meet,<br>and stay out of your screen share.</p>
 
----
+<p align="center"><img src="docs/img/app-present.png" width="520" alt="SpeakerNotes showing a slide's notes with highlighted phrases"></p>
 
 Presenter View doesn't survive a full-screen share on one laptop screen: either you lose your notes, or
 everyone sees them. SpeakerNotes is a small Mac window that sits on top of everything, follows your slides,
@@ -13,7 +13,7 @@ out of the way.
 
 ## Install
 
-Paste this in Terminal (macOS 13 or later, Apple silicon or Intel):
+Paste this in Terminal (macOS 13 or later, Apple silicon or Intel; instructions need macOS 26 with Apple Intelligence):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/roy-vinay/speakernotes/main/install.sh | bash
@@ -24,7 +24,9 @@ Run the same command any time to update. Or download **SpeakerNotes-macOS.zip** 
 Applications. The app isn't notarized yet, so the first time macOS says it "could not verify" it: open
 **System Settings > Privacy & Security** and click **Open Anyway**.
 
-SpeakerNotes lives in the menu bar (the speech bubble icon), not the Dock.
+SpeakerNotes has a Dock icon and a speech bubble in the menu bar. Click the Dock icon any time to bring
+the notes back. **SpeakerNotes > Open at Login** starts it with your Mac, so it's ready before every call.
+If it ever quits, it reopens on the same file and slide.
 
 ## Use it
 
@@ -44,6 +46,18 @@ SpeakerNotes lives in the menu bar (the speech bubble icon), not the Dock.
 ## The problem
 Pause here. Ask who has seen this before.
 ```
+
+## Make it easy to read
+
+- **Aa** in the header: text size, typeface (System, Rounded, Serif, Mono) and line spacing.
+- **Emphasis** (the highlighter): highlight, bold, color or underline phrases everywhere they appear.
+  - Select text in your notes, right-click, and pick a style.
+  - Write `==like this==` in your notes for a highlight.
+  - Or describe it: "highlight the names of the engines". On macOS 26 with Apple Intelligence, Apple's
+    on-device model reads your notes and finds them. Nothing leaves your Mac. On other Macs, type the exact
+    phrase instead.
+
+Emphasis is saved for each file and never changes the file itself. Remove it from the same panel.
 
 ## Shortcuts
 
@@ -65,6 +79,7 @@ After clicking inside the notes window:
 | → ← Space | Next / previous slide |
 | ⌘E | Edit or present (edits save back to your file) |
 | ⌘O / ⌘S | Open a file / save |
+| ⌘T | Text size and typeface |
 | ⌘+ / ⌘− | Text size |
 | ⌘] / ⌘[ | Less / more see-through |
 | ⌘W | Hide (bring it back from the menu bar) |
@@ -72,6 +87,12 @@ After clicking inside the notes window:
 **Move with My Slide Keys** (menu bar) makes the notes follow when you press → or ← in your slides app,
 so you only press one key. macOS asks for Accessibility permission the first time. After each update,
 macOS may ask again because the app is ad-hoc signed.
+
+## Before a demo
+
+- Turn on **Open at Login** once, and keep the notes file somewhere stable.
+- If a projector or second display comes and goes, the window moves back onto a screen you can see.
+- Run the test below once on the Mac you'll present from.
 
 ## Test before a real call
 

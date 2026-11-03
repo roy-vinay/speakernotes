@@ -15,7 +15,11 @@ let package = Package(
         .executableTarget(
             name: "SpeakerNotesApp",
             dependencies: ["SpeakerNotesCore"],
-            linkerSettings: [.linkedFramework("Carbon")]
+            linkerSettings: [
+                .linkedFramework("Carbon"),
+                // The on-device model only exists on macOS 26; weak-link it so the app still opens on older macOS.
+                .unsafeFlags(["-Xlinker", "-weak_framework", "-Xlinker", "FoundationModels"]),
+            ]
         ),
         .testTarget(name: "SpeakerNotesCoreTests", dependencies: ["SpeakerNotesCore"]),
     ]

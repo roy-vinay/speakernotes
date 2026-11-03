@@ -1,0 +1,39 @@
+name: test
+on:
+  push:
+    paths-ignore: ["README.md", "CHANGELOG.md", "docs/**"]
+  pull_request:
+    paths-ignore: ["README.md", "CHANGELOG.md", "docs/**"]
+  workflow_dispatch:
+jobs:
+  app:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build and test
+        run: |
+          set -o pipefail
+          swift --version
+          { swift build 2>&1 && swift test 2>&1; } | tee build.log || {
+            msg=$(grep -E "error:|failed|XCTAssert" build.log | head -40 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            echo "::error title=Swift build or test failed::$msg"
+            exit 1
+          }
+      - name: Package the app
+        run: ./scripts/build-app.sh
+      - name: Launch smoke test
+        run: |
+          ./build/SpeakerNotes.app/Contents/MacOS/SpeakerNotes &
+          PID=$!
+          sleep 8
+          if kill -0 $PID 2>/dev/null; then echo "App is running"; kill $PID; else echo "::error title=Launch failed::The app exited within 8 seconds"; exit 1; fi
+      - name: Installer script syntax
+        working-directory: .
+        run: bash -n install.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SpeakerNotes-macOS
+          path: app/build/SpeakerNotes-macOS.zip

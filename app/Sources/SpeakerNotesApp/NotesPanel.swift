@@ -3,40 +3,68 @@ import AppKit
 /// A floating panel that can take typing without pulling focus away from your slides app,
 /// and that stays visible when another app is in front.
 final class NotesPanel: NSPanel {
-    /// Handles ⌘ shortcuts that aren't text editing. Returns true when it handled the key.
-    var onCommandKey: ((String, Bool) -> Bool)?
-
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 
-    // The app has no visible menu bar, so standard editing shortcuts are wired up here.
+    // When the slides app is in front, our menu bar isn't, so send ⌘ shortcuts to our menus directly.
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        guard event.type == .keyDown, flags.contains(.command), !flags.contains(.control),
-              let key = event.charactersIgnoringModifiers?.lowercased() else {
-            return super.performKeyEquivalent(with: event)
-        }
-        let shift = flags.contains(.shift)
-        let editing: [String: String] = ["x": "cut:", "c": "copy:", "v": "paste:", "a": "selectAll:"]
-        if let selector = editing[key] {
-            return NSApp.sendAction(Selector(selector), to: nil, from: self)
-        }
-        if key == "z" {
-            return NSApp.sendAction(Selector(shift ? "redo:" : "undo:"), to: nil, from: self)
-        }
-        if let handler = onCommandKey, handler(key, shift) { return true }
-        return super.performKeyEquivalent(with: event)
+        if super.performKeyEquivalent(with: event) { return true }
+        if !NSApp.isActive, let menu = NSApp.mainMenu, menu.performKeyEquivalent(with: event) { return true }
+        return false
     }
 }
 
-/// The presenting view: read-only, and arrow keys or space move between slides.
+/// The presenting view: read-only; arrow keys or space move between slides, and right-click emphasizes.
 final class PresentTextView: NSTextView {
     var onKey: ((NSEvent) -> Bool)?
+    /// A phrase to emphasize with a style, or to un-emphasize when the style is nil.
+    var onEmphasize: ((String, EmphasisStyle?) -> Void)?
+    var onAskToEmphasize: (() -> Void)?
+    private var menuSelection = ""
 
     override func keyDown(with event: NSEvent) {
         if let onKey, onKey(event) { return }
         super.keyDown(with: event)
     }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let menu = NSMenu()
+        let range = selectedRange()
+        menuSelection = range.length > 0
+            ? (string as NSString).substring(with: range).trimmingCharacters(in: .whitespacesAndNewlines) : ""
+        if !menuSelection.isEmpty {
+            let short = menuSelection.count > 28 ? String(menuSelection.prefix(28)) + "…" : menuSelection
+            let header = NSMenuItem(title: "\u{201C}\(short)\u{201D}", action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            menu.addItem(header)
+            for style in EmphasisStyle.allCases {
+                let item = NSMenuItem(title: style.title, action: #selector(emphasizeSelection(_:)), keyEquivalent: "")
+                item.image = NSImage(systemSymbolName: style.symbol, accessibilityDescription: nil)
+                item.representedObject = style.rawValue
+                item.target = self
+                menu.addItem(item)
+            }
+            let remove = NSMenuItem(title: "Remove Emphasis", action: #selector(emphasizeSelection(_:)), keyEquivalent: "")
+            remove.representedObject = ""
+            remove.target = self
+            menu.addItem(remove)
+            menu.addItem(.separator())
+            menu.addItem(withTitle: "Copy", action: #selector(copy(_:)), keyEquivalent: "")
+            menu.addItem(.separator())
+        }
+        let ask = NSMenuItem(title: "Emphasize…", action: #selector(askToEmphasize), keyEquivalent: "")
+        ask.image = NSImage(systemSymbolName: "highlighter", accessibilityDescription: nil)
+        ask.target = self
+        menu.addItem(ask)
+        return menu
+    }
+
+    @objc private func emphasizeSelection(_ sender: NSMenuItem) {
+        let raw = sender.representedObject as? String ?? ""
+        onEmphasize?(menuSelection, EmphasisStyle(rawValue: raw))
+    }
+
+    @objc private func askToEmphasize() { onAskToEmphasize?() }
 }
 
 /// The window's content: accepts a Markdown file dropped onto it.

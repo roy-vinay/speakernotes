@@ -7,7 +7,10 @@ on:
   workflow_dispatch:
 jobs:
   app:
-    runs-on: macos-15
+    # macOS 26 has the SDK for Apple's on-device language model; the app itself still runs on macOS 13.
+    runs-on: macos-26
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: app
@@ -16,6 +19,7 @@ jobs:
       - name: Build and test
         run: |
           set -o pipefail
+          sw_vers
           swift --version
           { swift build 2>&1 && swift test 2>&1; } | tee build.log || {
             msg=$(grep -E "error:|failed|XCTAssert" build.log | head -40 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
@@ -23,7 +27,20 @@ jobs:
             exit 1
           }
       - name: Package the app
-        run: ./scripts/build-app.sh
+        run: |
+          set -o pipefail
+          ./scripts/build-app.sh 2>&1 | tee package.log || {
+            msg=$(grep -E "error:" package.log | head -40 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            echo "::error title=Packaging failed::$msg"
+            exit 1
+          }
+      - name: The on-device model framework is weak-linked (so older macOS can still open the app)
+        run: |
+          otool -l build/SpeakerNotes.app/Contents/MacOS/SpeakerNotes | grep -B2 FoundationModels || true
+          if otool -l build/SpeakerNotes.app/Contents/MacOS/SpeakerNotes | grep -B2 "FoundationModels" | grep -q "LC_LOAD_DYLIB$"; then
+            echo "::error title=Linking::FoundationModels is strongly linked; the app would not open before macOS 26"
+            exit 1
+          fi
       - name: Launch smoke test
         run: |
           ./build/SpeakerNotes.app/Contents/MacOS/SpeakerNotes &
@@ -33,6 +50,18 @@ jobs:
       - name: Installer script syntax
         working-directory: .
         run: bash -n install.sh
+      - name: Screenshots
+        run: ./scripts/screenshots.sh
+      - name: Commit screenshots to the branch (not main)
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+        working-directory: .
+        run: |
+          git config user.name "Vinay Roy"
+          git config user.email "roy-vinay@users.noreply.github.com"
+          git add docs/img/*.png
+          if git diff --cached --quiet; then echo "No screenshot changes"; exit 0; fi
+          git commit -m "SpeakerNotes docs: app screenshots"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}
       - uses: actions/upload-artifact@v4
         with:
           name: SpeakerNotes-macOS

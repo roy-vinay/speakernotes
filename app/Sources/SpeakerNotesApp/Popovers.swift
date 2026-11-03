@@ -8,6 +8,21 @@ private func label(_ text: String, size: CGFloat = 11, weight: NSFont.Weight = .
     return l
 }
 
+/// Wraps a stack in a fixed-width view with even padding, so popovers size cleanly.
+private func padded(_ stack: NSStackView, width: CGFloat) -> NSView {
+    let container = NSView()
+    stack.translatesAutoresizingMaskIntoConstraints = false
+    container.addSubview(stack)
+    NSLayoutConstraint.activate([
+        stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+        stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -16),
+        stack.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
+        stack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16),
+        container.widthAnchor.constraint(equalToConstant: width),
+    ])
+    return container
+}
+
 private func section(_ title: String, _ control: NSView) -> NSStackView {
     let s = NSStackView(views: [label(title.uppercased(), size: 10), control])
     s.orientation = .vertical
@@ -41,7 +56,7 @@ final class TextSettingsViewController: NSViewController {
         typeface.segmentStyle = .rounded
 
         for slider in [sizeSlider, spacingSlider] {
-            slider.widthAnchor.constraint(equalToConstant: 200).isActive = true
+            slider.widthAnchor.constraint(equalToConstant: 190).isActive = true
         }
         sizeValue.widthAnchor.constraint(equalToConstant: 46).isActive = true
         spacingValue.widthAnchor.constraint(equalToConstant: 46).isActive = true
@@ -60,8 +75,7 @@ final class TextSettingsViewController: NSViewController {
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 14
-        stack.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
-        view = stack
+        view = padded(stack, width: 340)
         refresh()
     }
 
@@ -162,8 +176,7 @@ final class EmphasisViewController: NSViewController, NSTextFieldDelegate {
         stack.spacing = 10
         stack.setCustomSpacing(4, after: title)
         stack.setCustomSpacing(16, after: statusRow)
-        stack.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
-        view = stack
+        view = padded(stack, width: 332)
         setStatus(Assistant.unavailableReason ?? "")
     }
 

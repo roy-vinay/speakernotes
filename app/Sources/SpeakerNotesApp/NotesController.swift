@@ -355,9 +355,9 @@ final class NotesController: NSObject, NSTextViewDelegate {
         emphasisButton.isOn = !rules.isEmpty
 
         let presenting = !editing && !empty
-        navGroup.isHidden = editing
-        progress.isHidden = editing
-        scrollGroup.isHidden = editing
+        navGroup.isHidden = !presenting
+        progress.isHidden = !presenting
+        scrollGroup.isHidden = !presenting
         editHint.isHidden = !editing
         prevButton.isEnabled = presenting && index > 0
         nextButton.isEnabled = presenting && index < slides.count - 1

@@ -7,7 +7,7 @@
 - **Always easy to launch:** SpeakerNotes now has a Dock icon and a full menu bar. Clicking the Dock icon always brings the notes back, **SpeakerNotes > Open at Login** starts it with your Mac, and it reopens on the same file and slide. If a display is unplugged mid-talk, the window moves back onto a screen you can see (**View > Reset Window Position** does it by hand).
 - **Text settings (Aa):** size, typeface (System, Rounded, Serif, Mono) and line spacing.
 - **Emphasis:** highlight, bold, color or underline any phrase everywhere it appears. Select text and right-click, write `==text==` in your notes, or describe it in the Emphasize panel. Emphasis is saved per file and never changes the file itself.
-- **Instructions with on-device AI:** on macOS 26 with Apple Intelligence, type something like "highlight the names of the engines" and Apple's on-device model finds them on every slide. Your notes never leave your Mac. On other Macs, the panel highlights the exact phrase you type.
+- **Instructions with on-device AI:** on macOS 26 with Apple Intelligence, type something like "highlight the parts of an agent" and Apple's on-device model finds them on every slide. Your notes never leave your Mac. On other Macs, the panel highlights the exact phrase you type.
 - Small messages confirm changes ("Saved", "Text 24 pt"), and click-through shows an amber border so you always know it's on.
 
 ## 0.1.0
